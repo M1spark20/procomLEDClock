@@ -1,0 +1,51 @@
+sdim load,65536
+sdim csv,524288
+sdim tempBuf,65536
+sdim chara,1024,128
+dim ref,65536,5
+
+// csv初期化
+notesel csv
+noteload "ipag18-2.csv"
+repeat notemax
+	noteget tempBuf,cnt
+	if(peek(tempBuf,0)!'#'):continue
+	split tempBuf, ",", chara
+	if(peek(tempBuf,1)='T'){
+		buffer int(chara.1)+1,1024,1024
+		picload chara.2,1
+	} else:if(peek(tempBuf,1)='R'){
+		p = int(chara.1)
+		repeat 5
+			ref.p.cnt = int(chara.(2+cnt))
+		loop
+	}
+loop
+
+// 文字読み込み(SJISエンコード)
+notesel load
+noteload "load.txt"
+screen 0,1280,notemax*16
+color 0,0,0 : boxf
+xPos = 0 : yPos = 0
+for bufPos,0,notesize,1
+	target = 0
+	first = peek(load,bufPos)
+	if(first=0):_break
+	if(first=0x0d):_continue	// CR
+	if(first=0x0a){				// LF
+		xPos = 0 : yPos + 16
+		_continue
+	}
+	if( (first<128) or (first>160 and first<224) ){
+		target = first	// 半角文字
+	} else {
+		bufPos++
+		second = peek(load,bufPos)
+		target = (first<<8)-0x8000 + second-0x40	// 全角文字
+		if(first>=224){ target-0x4041 }				// 0xE0以降から始まる文字用
+	}
+	pos xPos,yPos
+	gcopy (ref.target.0+1), ref.target.1, ref.target.2, ref.target.3, ref.target.4
+	xPos + ref.target.3
+next
