@@ -68,17 +68,16 @@ bool CControl32x16Matrix::TransferToMatrix(){
 		if(size[i] > maxSize) maxSize = size[i];
 	}
 	
-	
 	for(unsigned int port=0; port<4; ++port){
 		for(unsigned int panel=0; panel*32<maxSize; ++panel){
 			digitalWrite(Pin_OE, 0);
-			
 			for(unsigned int section=0; section<8; ++section){
+				// ã‰º”½“]‚³‚¹‚é
 				const unsigned int sectionBegin[][2] = {
-					{ (section/2)*8, (section%2)*4+port+panel*32},
-					{ (section/2)*8, (section%2)*4+port+8+panel*32},
-					{ (section/2)*8, (section%2)*4+port+16+panel*32},
-					{ (section/2)*8, (section%2)*4+port+24+panel*32},
+					{ (section/2)*8, 32-((section%2)*4+port) + panel*32},
+					{ (section/2)*8, 24-((section%2)*4+port) + panel*32},
+					{ (section/2)*8, 16-((section%2)*4+port) + panel*32},
+					{ (section/2)*8,  8-((section%2)*4+port) + panel*32},
 				};
 				unsigned int transferData[][4] = {
 					{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }
@@ -87,7 +86,7 @@ bool CControl32x16Matrix::TransferToMatrix(){
 				for(unsigned int address=0; address<4; ++address)
 				for(unsigned int color=0; color<3; ++color){
 					if(size[color] <= sectionBegin[address][1]) continue;						// out of range
-					transferData[color][address] = (*data[color])[sectionBegin[address][1]];	//1 line 32 dots
+					transferData[color][address] = (*data[color])[sectionBegin[address][1]];	// 1 line 32 dots
 				}
 					
 				for(unsigned int dots=0; dots<8; ++dots){
@@ -118,7 +117,7 @@ bool CControl32x16Matrix::TransferToMatrix(){
 		digitalWrite(Pin_A , Decode(port, 0, false));
 		digitalWrite(Pin_B , Decode(port, 1, false));
 		digitalWrite(Pin_LAT, 1);
-		delayMicroseconds(2);		// from wiringPi
+		//delayMicroseconds(2);		// from wiringPi(‚¿‚ç‚Â‚­‚æ‚¤‚È‚çƒRƒƒ“ƒg‚ð‰ðœ‚µ‚Ä‚­‚¾‚³‚¢)
 		digitalWrite(Pin_LAT, 0);
 	}
 	
